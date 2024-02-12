@@ -6,10 +6,17 @@ import sqlite3
 conn = sqlite3.connect('Paste_Scraper.db')
 print("Opened database successfully")
 
-# Create Words table
-conn.execute('''CREATE TABLE Words (
+# Create Dictionary table
+conn.execute('''CREATE TABLE Dictionary (
         WordID INTEGER PRIMARY KEY AUTOINCREMENT,
         Word TEXT NOT NULL,
+);''')
+
+# Create Words table
+conn.execute('''CREATE TABLE Words (
+        LootID INTEGER PRIMARY KEY AUTOINCREMENT,
+        Word_urlID INTEGER NOT NULL,
+        FOREIGN KEY (Word_urlID) REFERENCES Dictionary(WordID)
         UsageCount INTEGER DEFAULT 0
 );''')
 
@@ -21,8 +28,8 @@ conn.execute('''CREATE TABLE ScrapedContent (
         ScrapedText TEXT NOT NULL,
         ScrapedDateTime TEXT NOT NULL,
         URL TEXT NOT NULL,
-        FOREIGN KEY (Word1ID) REFERENCES Words(WordID),
-        FOREIGN KEY (Word2ID) REFERENCES Words(WordID)
+        FOREIGN KEY (Word1ID) REFERENCES Dictionary(WordID),
+        FOREIGN KEY (Word2ID) REFERENCES Dictionary(WordID)
 );''')
 
 # Create AnalysisResults table
