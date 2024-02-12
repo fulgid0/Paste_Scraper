@@ -16,7 +16,7 @@ conn.execute('''CREATE TABLE Dictionary (
 conn.execute('''CREATE TABLE Words (
         LootID INTEGER PRIMARY KEY AUTOINCREMENT,
         Word_urlID INTEGER NOT NULL,
-        FOREIGN KEY (Word_urlID) REFERENCES Dictionary(WordID)
+        FOREIGN KEY (Word_urlID) REFERENCES Dictionary(WordID),
         UsageCount INTEGER DEFAULT 0
 );''')
 
