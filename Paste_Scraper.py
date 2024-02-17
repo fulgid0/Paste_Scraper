@@ -118,7 +118,7 @@ def Paste_dictionary(filename=""):
   os.system("cp "+filename+" sup_file.txt")
  with open(sup_file) as file:
   for line in file:
-   word=line.split(' ')[0]
+   word=line.split(' ')[0].strip()
    if len(word) > 1:
     flag=Dictionary_pop(conn,word)
    if flag == 1:
