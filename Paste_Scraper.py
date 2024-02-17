@@ -97,10 +97,14 @@ while True:
 def Dictionary_pop(conn,word):
  flag=0
  query1= "INSERT INTO Dictionary (Word) VALUES ('"+word+"')"
- try:
-  cursor = conn.execute(query1)
- except:
-  flag=1
+ if "'" not in word:
+  cursor = conn.execute("SELECT * FROM Dictionary WHERE Word= '" + word + "'")
+  row = cursor.fetchone()
+  if row is None:
+   try:
+    cursor = conn.execute(query1)
+   except:
+    flag=1
  return flag
 
 def Paste_dictionary(filename=""):
@@ -115,13 +119,13 @@ def Paste_dictionary(filename=""):
  with open(sup_file) as file:
   for line in file:
    word=line.split(' ')[0]
-   if len(word) > 0:
+   if len(word) > 1:
     flag=Dictionary_pop(conn,word)
    if flag == 1:
     break
  os.system("rm "+sup_file);
  if flag ==0:
-  print("dictionary acquisition complite")
+  print("dictionary acquisition complete")
   conn.commit() 
  else:
   print("issue in dictionary acquisition, trouble with the line: ["+word+"]")
