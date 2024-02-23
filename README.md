@@ -9,7 +9,7 @@ Words resulted in a valid link, also counting the occurance. The idea is to use 
 Stores the content scraped from web pages, including the content itself, the date and time it was scraped, the URL from where it was scraped, and references to two words from the Dictionary table (via foreign key).
 ### AnalysisResults: 
 This is the table populated after chatgpt interraction.
-Holds the results of analyzing the scraped content, including three keywords extracted from the content, an optional alert field (a list of sensible info found) and the date and time of the analysis. It references the ScrapedContent table via ContentID (foreign key).
+Holds the results of analyzed the scraped content, including three keywords extracted from the content, an optional alert field (a list of sensible info found) and the date and time of the analysis. It references the ScrapedContent table via ContentID (foreign key).
 
 ## Details on schema fields
 ### Dictionary Table
