@@ -2,13 +2,14 @@
 
 ## SCHEMA
 ### Dictionary: 
-Contains a unique ID for each word and the word itself.
+Contains all words collected by default repository, or (if provided via CLI) specific dictionary file.
 ### Words: 
-Links words to URLs (though the actual URL is not stored in this table) and counts their usage.
+Words resulted in a valid link, also counting the occurance. The idea is to use this value for statistics, making further scrapping smarter [TO DEVELOP]. The world is not directly stored in this table, but we use the foreign key of Dictionary table.
 ### ScrapedContent: 
-Stores the content scraped from web pages, including the content itself, the date and time it was scraped, the URL from where it was scraped, and references to two words from the Dictionary table.
+Stores the content scraped from web pages, including the content itself, the date and time it was scraped, the URL from where it was scraped, and references to two words from the Dictionary table (via foreign key).
 ### AnalysisResults: 
-Holds the results of analyzing the scraped content, including three keywords extracted from the content, an optional alert field, and the date and time of the analysis. It references the ScrapedContent table via ContentID.
+This is the table populated after chatgpt interraction.
+Holds the results of analyzing the scraped content, including three keywords extracted from the content, an optional alert field (a list of sensible info found) and the date and time of the analysis. It references the ScrapedContent table via ContentID (foreign key).
 
 # Things to do:
 
