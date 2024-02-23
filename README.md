@@ -13,9 +13,8 @@ Holds the results of analyzing the scraped content, including three keywords ext
 
 ## Details on schema fields
 ### Dictionary Table
-WordID: INTEGER PRIMARY KEY AUTOINCREMENT
-
-Word: TEXT NOT NULL
+* WordID: INTEGER PRIMARY KEY AUTOINCREMENT
+* Word: TEXT NOT NULL
 
 ### Words Table
 LootID: INTEGER PRIMARY KEY AUTOINCREMENT
