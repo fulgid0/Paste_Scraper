@@ -3,8 +3,8 @@
 import os,sys
 import sqlite3, time, re
 import subprocess
-from random import randint
- 
+import random
+import requests 
 
 
 
@@ -131,8 +131,115 @@ def Paste_dictionary(filename=""):
   print("issue in dictionary acquisition, trouble with the line: ["+word+"]")
   conn.rollback() 
  conn.close()
-  
+
+def get_two_random_words():
+    # Connect to the SQLite database
+    conn = sqlite3.connect('Paste_Scraper.db')
+    cursor = conn.cursor()
+    # SQL query to select two random words from the Dictionary table
+    query = '''SELECT Word FROM Dictionary ORDER BY RANDOM() LIMIT 2;'''    
+    try:
+        cursor.execute(query)
+        words = cursor.fetchall()  # Fetches the two random words
+        if words:
+            return [word[0] for word in words]  # Return the words as a list of strings
+        else:
+            return []  # Return an empty list if no words are found
+    except sqlite3.Error as e:
+        print(f"An error occurred: {e}")
+        return []  # Return an empty list in case of an error
+    finally:
+        conn.close()  # Ensure the database connection is closed
+
+def check_and_fetch_content(random_words):
+    base_url = "https://paste.c-net.org/"
+    
+    # Generate URLs for both word orders
+    urls = [f"{base_url}{random_words[0]}{random_words[1]}", f"{base_url}{random_words[1]}{random_words[0]}"]
+    flag=0
+    for url in urls:
+        flag= flag+1
+        # Perform a HEAD request to check if the page exists
+        head_response = requests.head(url)
+        print(url)
+        
+        # If the page exists (HTTP status code 200)
+        if head_response.status_code == 200:
+            # Perform a GET request to fetch the page's content
+            get_response = requests.get(url)
+            # Return the content if the page was successfully fetched
+            if get_response.status_code == 200:
+               content=get_response.text
+               if len(content) >200:
+                content="10TOO_LONG!01"
+               if flag == 1:
+                insert_scraped_content_and_words(random_words[0], random_words[1], content, url.split('//')[1].strip())
+               else:
+                insert_scraped_content_and_words(random_words[1], random_words[0], content, url.split('//')[1].strip())
+               return content
+    # Return None if neither URL points to a valid page
+    return None
+
+    # Function to insert or find a word in the Dictionary and return its WordID
+def get_or_insert_word_id(word,cursor):
+ cursor.execute("SELECT WordID FROM Dictionary WHERE Word = ?", (word,))
+ result = cursor.fetchone()
+ if result:
+  return result[0]
+'''        else:
+            cursor.execute("INSERT INTO Dictionary (Word) VALUES (?)", (word,))
+            return cursor.lastrowid
+'''    
+
+def insert_scraped_content_and_words(word1, word2, content, url):
+    conn = sqlite3.connect("Paste_Scraper.db")
+    cursor = conn.cursor()
+    
+
+    try:
+        # Get or insert words and retrieve their IDs
+        word1_id = str(get_or_insert_word_id(word1,cursor))
+        word2_id = str(get_or_insert_word_id(word2,cursor))
+        
+        # Insert into ScrapedContent table
+        query="INSERT INTO ScrapedContent (Word1ID, Word2ID, ScrapedText, ScrapedDateTime, URL) VALUES ("+word1_id+", "+word2_id+", '"+content+"', datetime('now'), '"+url+"')" 
+        print("printo: "+query)
+        cursor.execute(query)
+
+        #################LA TABELLA WORD!!!!!!
+        # Insert into Words table if not exists; this assumes you want to track each word's usage in URLs
+        # This is a simple implementation and might need adjustment based on your actual requirements
+#       for word_id in [word1_id, word2_id]:
+#            query2= "INSERT OR REPLACE INTO Words (Word_urlID, UsageCount) VALUES ("+word_id+", 1) ON CONFLICT(Word_urlID) DO UPDATE SET UsageCount = UsageCount + 1"
+#            print ("questo invece: "+query2)
+#            cursor.execute(query2)
+        conn.commit()
+        print("Database updated successfully.")
+    except sqlite3.Error as e:
+        print(f"An error occurred: {e}")
+    finally:
+        conn.close()
+
+# Assuming you have fetched content using the previous function
+# content = check_and_fetch_content("ExampleWord1", "ExampleWord2")
+# if content:
+#     insert_scraped_content_and_words("ExampleWord1", "ExampleWord2", content)
+
+
+
 if len(sys.argv) > 1:
  Paste_dictionary(sys.argv[1])
 else:
  Paste_dictionary()
+# Example usage random words
+while True:
+ random_words = get_two_random_words()
+ print(random_words)
+ # Example usage with two sample words
+ content = check_and_fetch_content(random_words)
+ if content:
+  print("Content fetched successfully.")
+  print(content)
+ else:
+  print("No valid page found for the given word combinations.")
+
