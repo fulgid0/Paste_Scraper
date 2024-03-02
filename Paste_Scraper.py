@@ -7,93 +7,6 @@ import random
 import requests 
 
 
-
-'''
-
-
-def Scansione(conn):
- cursor = conn.execute("SELECT Subdomain, Number FROM Anagrafica")
- cursor.fetchone()
- for row in cursor:
-  if "receive-smss.com" in row:
-   Scan_Receive_sms(conn,row[1].split("+")[1])
-  if "smstome.com" in row:
-   Scan_Smstome_sms(conn,row[1]) #### CONTROLLARE PERCHE SOLO UN GIRO
- 
-def DB_Ana(conn, Subdomain, Number, Alive, Nation):
- cursor = conn.execute("SELECT * FROM Anagrafica WHERE Number= '" + Number + "' AND Nation= '" +Nation+"'")
- row = cursor.fetchone()
- if row is None:
-  query1= "INSERT INTO Anagrafica (Subdomain, Number, Alive, Nation) VALUES ('"+Subdomain+"', '"+Number+"',  '"+Alive+"', '"+Nation+"')"
-  cursor = conn.execute(query1)
-  conn.commit()
-  print ("New finding: " + Number + " [" + Nation + "] - Records created successfully");
-
-def Ana_Receive_smss():
- print ("ANAGRAFICA Receive-smss.com");
- conn = sqlite3.connect('SMS_DB.db')
- sup_file= 'receive-smss'
- os.system("wget -O " + sup_file + " " + 'https://receive-smss.com/')
- subdomain = "receive-smss.com"
- flag = 0
- with open(sup_file) as file:
-  for line in file:
-   if '<div class="number-boxes-itemm-number" style="color:black">' in line:
-    number = line.split('<div class="number-boxes-itemm-number" style="color:black">')[1].split('</div>')[0]
-    flag = flag+1
-   if '<div class="number-boxes-item-country number-boxess-item-country">' in line:
-    nation = line.split('<div class="number-boxes-item-country number-boxess-item-country">')[1].split('</div>')[0]  
-    flag = flag+1
-   if flag > 1:
-    alive = "none"
-    DB_Ana(conn, subdomain, number, alive, nation)
-    flag = 0
-    number = "NULL"
-    nation = "NULL"
- os.system("rm "+sup_file)
- Scansione(conn)
- conn.close()
-
-def Ana_SMStome():
- print ("ANAGRAFICA smstome.com");
- conn = sqlite3.connect('SMS_DB.db')
- sup_file= 'SMStome'
- os.system("wget -O " + sup_file + " " + 'https://smstome.com/')
- subdomain = "smstome.com"
- flag = 0
- flag2 = 0
- with open(sup_file) as file:
-  for line in file:
-   if '                            <a href="' in line and '/country/' in line:
-    sup_2 = line.split('                            <a href="')[1].split('" class="button button-clear">')[0]
-    nation = sup_2.split('/country/')[1].split('/')[0]
-    flag = flag+1
-   if flag > 1:
-    flag = 0
-    sup_file2 = "SMStome_"+nation
-    os.system("wget -O " + sup_file2 + " " + 'https://smstome.com'+sup_2+"?page="+str(randint(1, 30)))
-    with open(sup_file2) as file:
-     for line2 in file:
-      if 'button button-outline button-small numbutton' in line2:
-       number_link = line2.split('<a href="https://smstome.com')[1].split('" class=')[0]
-       flag2 = flag2+1
-      if flag2 > 1:
-       alive = "none"
-       DB_Ana(conn, subdomain, number_link, alive, nation)
-       flag2 = 0    
-    os.system("rm "+sup_file2)
- Scansione(conn)
- os.system("rm "+sup_file)
- conn.close()
- 
-while True: 
- Ana_Receive_smss()
- Ana_SMStome()
- print("---- Execution Hold ---- at time: ")
- str(os.system("date +%k:%M.%S")).strip()
- time.sleep(180) 
- 
-''' 
 def Dictionary_pop(conn,word):
  flag=0
  query1= "INSERT INTO Dictionary (Word) VALUES ('"+word+"')"
@@ -182,50 +95,40 @@ def check_and_fetch_content(random_words):
 
     # Function to insert or find a word in the Dictionary and return its WordID
 def get_or_insert_word_id(word,cursor):
- cursor.execute("SELECT WordID FROM Dictionary WHERE Word = ?", (word,))
- result = cursor.fetchone()
- if result:
-  return result[0]
-'''        else:
-            cursor.execute("INSERT INTO Dictionary (Word) VALUES (?)", (word,))
-            return cursor.lastrowid
-'''    
+ cursor.execute("SELECT WordID, UsageCount FROM Dictionary WHERE Word = ?", (word,))
+ result = cursor.fetchall()
+ return result[0]
+  
 
 def insert_scraped_content_and_words(word1, word2, content, url):
-    conn = sqlite3.connect("Paste_Scraper.db")
-    cursor = conn.cursor()
-    
-
+   conn = sqlite3.connect("Paste_Scraper.db")
+   cursor = conn.cursor()
+   query= "SELECT COUNT(URL) FROM ScrapedContent WHERE URL = '"+url+"';"
+   cursor.execute(query)
+   flag= cursor.fetchone() 
+   if flag[0] ==0:
     try:
         # Get or insert words and retrieve their IDs
-        word1_id = str(get_or_insert_word_id(word1,cursor))
-        word2_id = str(get_or_insert_word_id(word2,cursor))
         
+        word1_Array = get_or_insert_word_id(word1,cursor)
+        word2_Array = get_or_insert_word_id(word2,cursor)
+
         # Insert into ScrapedContent table
-        query="INSERT INTO ScrapedContent (Word1ID, Word2ID, ScrapedText, ScrapedDateTime, URL) VALUES ("+word1_id+", "+word2_id+", '"+content+"', datetime('now'), '"+url+"')" 
+        query="INSERT INTO ScrapedContent (Word1ID, Word2ID, ScrapedText, ScrapedDateTime, URL) VALUES ("+str(word1_Array[0])+", "+str(word2_Array[0])+", '"+content+"', datetime('now'), '"+url+"')" 
         print("printo: "+query)
         cursor.execute(query)
-
-        #################LA TABELLA WORD!!!!!!
-        # Insert into Words table if not exists; this assumes you want to track each word's usage in URLs
-        # This is a simple implementation and might need adjustment based on your actual requirements
-#       for word_id in [word1_id, word2_id]:
-#            query2= "INSERT OR REPLACE INTO Words (Word_urlID, UsageCount) VALUES ("+word_id+", 1) ON CONFLICT(Word_urlID) DO UPDATE SET UsageCount = UsageCount + 1"
-#            print ("questo invece: "+query2)
-#            cursor.execute(query2)
+        queryw1="UPDATE Dictionary SET UsageCount  = "+str(word1_Array[1]+1)+" WHERE WordID= "+str(word1_Array[0])+";"
+        queryw2="UPDATE Dictionary SET UsageCount  = "+str(word2_Array[1]+1)+" WHERE WordID= "+str(word2_Array[0])+";"
+        cursor.execute(queryw1)
+        cursor.execute(queryw2)        
         conn.commit()
         print("Database updated successfully.")
     except sqlite3.Error as e:
         print(f"An error occurred: {e}")
     finally:
         conn.close()
-
-# Assuming you have fetched content using the previous function
-# content = check_and_fetch_content("ExampleWord1", "ExampleWord2")
-# if content:
-#     insert_scraped_content_and_words("ExampleWord1", "ExampleWord2", content)
-
-
+   else:
+     print("Url already present in the DB: consider to extend the dictionary")
 
 if len(sys.argv) > 1:
  Paste_dictionary(sys.argv[1])
