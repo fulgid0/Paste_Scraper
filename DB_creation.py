@@ -9,8 +9,8 @@ print("Opened database successfully")
 # Create Dictionary table
 conn.execute('''CREATE TABLE Dictionary (
         WordID INTEGER PRIMARY KEY AUTOINCREMENT,
-        Word TEXT NOT NULL
-        UsageCount INTEGER DEFAULT 0,
+        Word TEXT NOT NULL,
+        UsageCount INTEGER DEFAULT 0
 );''')
 
 # Create ScrapedContent table
