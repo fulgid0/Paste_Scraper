@@ -5,7 +5,22 @@ import sqlite3, time, re
 import subprocess
 import random
 import requests 
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
+def escaping(var_str):
+ escaped = var_str.translate(str.maketrans({"-":  r"\-",
+                                          "]":  r"\]",
+                                          "\\": r"\\",
+                                          "^":  r"\^",
+                                          "$":  r"\$",
+                                          "*":  r"\*",
+                                          "'":  r"''",
+                                          "@":  r"\@",
+                                          "\x00":  r"",
+                                          ".":  r"\."}))
+ return escaped
+ 
 
 def Dictionary_pop(conn,word):
  flag=0
@@ -66,23 +81,37 @@ def get_two_random_words():
 
 def check_and_fetch_content(random_words):
     base_url = "https://paste.c-net.org/"
-    
+    user_agents = [
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36'
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36'
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36'
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36'
+    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36'
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15'
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15'
+]
+    message_neg="There's no such file here :("
     # Generate URLs for both word orders
     urls = [f"{base_url}{random_words[0]}{random_words[1]}", f"{base_url}{random_words[1]}{random_words[0]}"]
     flag=0
     for url in urls:
-        flag= flag+1
-        # Perform a HEAD request to check if the page exists
-        head_response = requests.head(url)
-        print(url)
-        
+     flag= flag+1
+     headers = {'User-Agent': random.choice(user_agents)}
+     # Perform a HEAD request to check if the page exists
+     retry_strategy = Retry(total=3,	backoff_factor=1)
+     adapter = HTTPAdapter(max_retries=retry_strategy)
+     http = requests.Session()
+     http.mount("https://", adapter)
+     print(url)
+     response = http.get(url,headers=headers)
+     #head_response = requests.head(url)
         # If the page exists (HTTP status code 200)
-        if head_response.status_code == 200:
+     if message_neg not in response.text:
             # Perform a GET request to fetch the page's content
-            get_response = requests.get(url)
+            #get_response = requests.get(url)
             # Return the content if the page was successfully fetched
-            if get_response.status_code == 200:
-               content=get_response.text
+            #if get_response.status_code == 200:
+               content=escaping(str(response.text))
                if len(content) >200:
                 content="10TOO_LONG!01"
                if flag == 1:
@@ -145,4 +174,3 @@ while True:
   print(content)
  else:
   print("No valid page found for the given word combinations.")
-
