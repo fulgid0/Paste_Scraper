@@ -2,9 +2,7 @@
 
 ## SCHEMA
 ### Dictionary: 
-Contains all words collected by default repository, or (if provided via CLI) specific dictionary file.
-### Words: 
-Words resulted in a valid link, also counting the occurance. The idea is to use this value for statistics, making further scrapping smarter [TO DEVELOP]. The world is not directly stored in this table, but we use the foreign key of Dictionary table.
+Contains all words collected by default repository, or (if provided via CLI) specific dictionary file. It tracks also success occurences for statics reasons (via 'UsageCount' field).
 ### ScrapedContent: 
 Stores the content scraped from web pages, including the content itself, the date and time it was scraped, the URL from where it was scraped, and references to two words from the Dictionary table (via foreign key).
 ### AnalysisResults: 
@@ -15,10 +13,6 @@ Holds the results of analyzed the scraped content, including three keywords extr
 ### Dictionary Table
 * WordID: INTEGER PRIMARY KEY AUTOINCREMENT
 * Word: TEXT NOT NULL
-
-### Words Table
-* LootID: INTEGER PRIMARY KEY AUTOINCREMENT
-* Word_urlID: INTEGER NOT NULL (Foreign Key references Dictionary(WordID))
 * UsageCount: INTEGER DEFAULT 0
 
 ### ScrapedContent Table
@@ -38,16 +32,18 @@ Holds the results of analyzed the scraped content, including three keywords extr
 * Alert: TEXT DEFAULT NULL
 * AnalysisDateTime: TEXT NOT NULL
 
-# Things to do:
+# Things to do on the main script:
+- [x] Re-do Db creation, containing also all the Dictionary;
+- [x] Query and extract;
+- [x] randomly take two words and put in the query;
+- [x] Track back on the db what is found;
+- [x] Statistics;
+- [ ] Comment the code, and that's all 🎉
 
--Re-do Db creation, containing also all the Dictionary;
-
--Query and extract;
-
--randomly take two words and put in the query;
-
--Write on the db what is found;
-
--Statistics;
-
--Chatgpt stuff.
+# Things to do on the ChatGPT script:
+- [ ] API KEY via file or cli;
+- [ ] Extraction of targets links from the DB;
+- [ ] Query preparation;
+- [ ] Write back on db;
+- [ ] Signaling feature?
+- [ ] Comment the code, and that's all 🎉
