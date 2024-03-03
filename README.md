@@ -42,6 +42,7 @@ Holds the results of analyzed the scraped content, including three keywords extr
 - [x] Track back on the db what is found;
 - [x] Statistics;
 - [ ] Comment the code, and that's all 🎉
+- [ ] (extras) Add some prompt during the waiting, just to remark that is alive and doing stuff❔
 
 # Things to do on the ChatGPT script:
 - [ ] API KEY via file or cli;
