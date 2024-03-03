@@ -1,5 +1,8 @@
 # Paste_Scraper
 
+The aim is scrap for file stored on one of pastebin-like services, and save the finding on the DB. 
+Shortly also chatGPT funtionality will be implemented in order to automatically describe the finding and alert on any sensible information found (like emails, credentials, api kyes...)
+
 ## SCHEMA
 ### Dictionary: 
 Contains all words collected by default repository, or (if provided via CLI) specific dictionary file. It tracks also success occurences for statics reasons (via 'UsageCount' field).
