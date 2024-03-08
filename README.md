@@ -43,6 +43,7 @@ Holds the results of analyzed the scraped content, including three keywords extr
 - [x] Statistics;
 - [x] Multi HTTP agent support;
 - [x] Bad character management escape;
+- [ ] Proxing;
 - [ ] Better error handeler in case of connection holds;
 - [ ] Comment the code, and that's all 🎉
 - [ ] (extras) Add some prompt during the waiting, just to remark that is alive and doing stuff❔
