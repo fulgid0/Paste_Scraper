@@ -43,10 +43,10 @@ Holds the results of analyzed the scraped content, including three keywords extr
 - [x] Statistics;
 - [x] Multi HTTP agent support;
 - [x] Bad character management escape;
-- [ ] Documentation - Requirements;
-- [ ] Better error handeler in case of connection holds;
-- [ ] Proxing;
+- [X] Better error handeler in case of connection holds (desynchronization);
+- [ ] Documentation - Requirements (under testing) & github clone;
 - [ ] Comment the code, and that's all 🎉
+- [ ] (extras) on-board Proxing capabilities;
 - [ ] (extras) Add some prompt during the waiting, just to remark that is alive and doing stuff❔
 
 # Things to do on the ChatGPT script:
