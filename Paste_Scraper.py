@@ -20,7 +20,6 @@ def escaping(var_str):
                                           "\x00":  r"",
                                           ".":  r"\."}))
  return escaped
- 
 
 def Dictionary_pop(conn,word):
  flag=0
@@ -94,6 +93,7 @@ def check_and_fetch_content(random_words):
     # Generate URLs for both word orders
     urls = [f"{base_url}{random_words[0]}{random_words[1]}", f"{base_url}{random_words[1]}{random_words[0]}"]
     flag=0
+    flag1=0
     for url in urls:
      flag= flag+1
      headers = {'User-Agent': random.choice(user_agents)}
@@ -103,14 +103,19 @@ def check_and_fetch_content(random_words):
      http = requests.Session()
      http.mount("https://", adapter)
      print(url)
-     response = http.get(url,headers=headers)
-     #head_response = requests.head(url)
+     try:
+      response = http.get(url,headers=headers)
+      response_string = response.text
+     except:
+      response_string = message_neg
+      #os.system("service tor reload"); print("\n")
+      print("Entering in sleeping after failure (30 sec)")
+      time.sleep(30)
+      print("Awakening")
+      flag1=1
+         #head_response = requests.head(url)
         # If the page exists (HTTP status code 200)
-     if message_neg not in response.text:
-            # Perform a GET request to fetch the page's content
-            #get_response = requests.get(url)
-            # Return the content if the page was successfully fetched
-            #if get_response.status_code == 200:
+     if message_neg not in response_string and flag1==0:
                content=escaping(str(response.text))
                if len(content) >200:
                 content="10TOO_LONG!01"
@@ -128,7 +133,6 @@ def get_or_insert_word_id(word,cursor):
  result = cursor.fetchall()
  return result[0]
   
-
 def insert_scraped_content_and_words(word1, word2, content, url):
    conn = sqlite3.connect("Paste_Scraper.db")
    cursor = conn.cursor()
@@ -138,10 +142,8 @@ def insert_scraped_content_and_words(word1, word2, content, url):
    if flag[0] ==0:
     try:
         # Get or insert words and retrieve their IDs
-        
         word1_Array = get_or_insert_word_id(word1,cursor)
         word2_Array = get_or_insert_word_id(word2,cursor)
-
         # Insert into ScrapedContent table
         query="INSERT INTO ScrapedContent (Word1ID, Word2ID, ScrapedText, ScrapedDateTime, URL) VALUES ("+str(word1_Array[0])+", "+str(word2_Array[0])+", '"+content+"', datetime('now'), '"+url+"')" 
         print("printo: "+query)
@@ -158,7 +160,6 @@ def insert_scraped_content_and_words(word1, word2, content, url):
         conn.close()
    else:
      print("Url already present in the DB: consider to extend the dictionary")
-
 if len(sys.argv) > 1:
  Paste_dictionary(sys.argv[1])
 else:
@@ -173,4 +174,5 @@ while True:
   print("Content fetched successfully.")
   print(content)
  else:
+  str(os.system("date +%k:%M.%S")).strip()
   print("No valid page found for the given word combinations.")
