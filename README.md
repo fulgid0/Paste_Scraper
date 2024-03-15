@@ -65,7 +65,7 @@ Change into the Paste_Scraper project directory with:
 - [x] Multi HTTP agent support;
 - [x] Bad character management escape;
 - [X] Better error handeler in case of connection holds (desynchronization);
-- [ ] Documentation - Requirements (under testing) & github clone;
+- [X] Documentation - Requirements (under testing) & github clone;
 - [ ] Comment the code, and that's all 🎉
 - [ ] (extras) on-board Proxing capabilities;
 - [ ] (extras) Add some prompt during the waiting, just to remark that is alive and doing stuff❔
