@@ -43,12 +43,9 @@ Follow these steps to clone and start using Paste_Scraper:
 
 1. **Clone the repository**
 
-   Open your terminal or command prompt and execute the following command:
+Open your terminal or command prompt and execute the following command:
 
-git clone https://github.com/fulgid0/Paste_Scraper.git
-
-sql
-Copy code
+>git clone https://github.com/fulgid0/Paste_Scraper.git
 
 This command downloads a copy of the Paste_Scraper project to your local machine.
 
@@ -56,7 +53,7 @@ This command downloads a copy of the Paste_Scraper project to your local machine
 
 Change into the Paste_Scraper project directory with:
 
-cd Paste_Scraper
+>cd Paste_Scraper
 
 
 # Things to do on the main script:
