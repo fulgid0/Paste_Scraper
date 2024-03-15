@@ -35,6 +35,30 @@ Holds the results of analyzed the scraped content, including three keywords extr
 * Alert: TEXT DEFAULT NULL
 * AnalysisDateTime: TEXT NOT NULL
 
+# Installation
+
+To install and use the Paste_Scraper, you'll first need to clone the repository to your local machine. Ensure you have Git installed before you begin..
+
+Follow these steps to clone and start using Paste_Scraper:
+
+1. **Clone the repository**
+
+   Open your terminal or command prompt and execute the following command:
+
+git clone https://github.com/fulgid0/Paste_Scraper.git
+
+sql
+Copy code
+
+This command downloads a copy of the Paste_Scraper project to your local machine.
+
+2. **Navigate to the project directory**
+
+Change into the Paste_Scraper project directory with:
+
+cd Paste_Scraper
+
+
 # Things to do on the main script:
 - [x] Re-do Db creation, containing also all the Dictionary;
 - [x] Query and extract;
