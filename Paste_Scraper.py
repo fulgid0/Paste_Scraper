@@ -1,12 +1,15 @@
 #!/usr/bin/python
-
 import os,sys
 import sqlite3, time, re
 import subprocess
 import random
-import requests 
+import requests
+import time
+import multiprocessing
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
+MAX_SUB_PROCESSES = 10
+
 
 def escaping(var_str):
  escaped = var_str.translate(str.maketrans({"-":  r"\-",
@@ -98,25 +101,39 @@ def check_and_fetch_content(random_words):
      flag= flag+1
      headers = {'User-Agent': random.choice(user_agents)}
      # Perform a HEAD request to check if the page exists
-     retry_strategy = Retry(total=3,	backoff_factor=1)
+     retry_strategy = Retry(total=3,    backoff_factor=1)
      adapter = HTTPAdapter(max_retries=retry_strategy)
      http = requests.Session()
      http.mount("https://", adapter)
-     print(url)
      try:
-      response = http.get(url,headers=headers)
-      response_string = response.text
+      #response = http.get(url,headers=headers)
+      #response = os.system("wget -q "+url)
+      #response_string = response.text
+      stringa= "curl "+url
+      print(stringa)
+      #response_string = os.open(stringa).read()#subprocess.check_output(stringa, shell=True)
+      #proc = subprocess.Popen([stringa], stdout=subprocess.PIPE)
+      #(response_string, err) = proc.communicate()
+      p = subprocess.Popen(["curl", url], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+      response_string = str(p.stdout.read()).split('"')[1]
+      #print(response_string)
      except:
       response_string = message_neg
-      #os.system("service tor reload"); print("\n")
-      print("Entering in sleeping after failure (30 sec)")
-      time.sleep(30)
+      os.system("service tor reload"); print("\n")
+      print("entering in sleeping after failure")
+      time.sleep(2)
       print("Awakening")
       flag1=1
          #head_response = requests.head(url)
         # If the page exists (HTTP status code 200)
      if message_neg not in response_string and flag1==0:
-               content=escaping(str(response.text))
+            # Perform a GET request to fetch the page's content
+            #get_response = requests.get(url)
+            # Return the content if the page was successfully fetched
+            #if get_response.status_code == 200:
+               #content=escaping(str(response.text))
+               content=escaping(response_string)
+               print(content)
                if len(content) >200:
                 content="10TOO_LONG!01"
                if flag == 1:
@@ -160,12 +177,8 @@ def insert_scraped_content_and_words(word1, word2, content, url):
         conn.close()
    else:
      print("Url already present in the DB: consider to extend the dictionary")
-if len(sys.argv) > 1:
- Paste_dictionary(sys.argv[1])
-else:
- Paste_dictionary()
-# Example usage random words
-while True:
+
+def MultiProc():
  random_words = get_two_random_words()
  print(random_words)
  # Example usage with two sample words
@@ -174,5 +187,23 @@ while True:
   print("Content fetched successfully.")
   print(content)
  else:
-  str(os.system("date +%k:%M.%S")).strip()
   print("No valid page found for the given word combinations.")
+ str(os.system("date +%k:%M.%S")).strip()
+ 
+ #MAIN STARTS HERE
+if len(sys.argv) > 1:
+ Paste_dictionary(sys.argv[1])
+else:
+ Paste_dictionary()
+# Example usage random words
+while True:
+    results = []
+    running_processes = []
+    index = 0
+    for index in range(1, MAX_SUB_PROCESSES+1):
+      p = multiprocessing.Process(target=MultiProc)
+      p.start()
+      running_processes.append(p)
+    for p in running_processes:
+      p.join()
+    print(str(MAX_SUB_PROCESSES)+" Processes closed")
