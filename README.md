@@ -67,6 +67,7 @@ Change into the Paste_Scraper project directory with:
 - [x] Better error handeler in case of connection holds (desynchronization);
 - [x] Documentation - Requirements (under testing) & github clone;
 - [x] MultiProcessing;
+- [x] Escaping in case of process stuck (60s timeout)
 - [ ] Comment the code, and that's all 🎉
 - [ ] (extras) on-board Proxing capabilities;
 - [ ] (extras) Add some prompt during the waiting, just to remark that is alive and doing stuff❔
