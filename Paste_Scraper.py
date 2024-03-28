@@ -1,4 +1,5 @@
 #!/usr/bin/python
+
 import os,sys
 import sqlite3, time, re
 import subprocess
@@ -8,8 +9,9 @@ import time
 import multiprocessing
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
-MAX_SUB_PROCESSES = 10
-
+MAX_SUB_PROCESSES = 15
+COUNTER_DOUBLE_F = 0
+TIMEOUT = 60
 
 def escaping(var_str):
  escaped = var_str.translate(str.maketrans({"-":  r"\-",
@@ -23,6 +25,7 @@ def escaping(var_str):
                                           "\x00":  r"",
                                           ".":  r"\."}))
  return escaped
+ 
 
 def Dictionary_pop(conn,word):
  flag=0
@@ -81,7 +84,7 @@ def get_two_random_words():
     finally:
         conn.close()  # Ensure the database connection is closed
 
-def check_and_fetch_content(random_words):
+def check_and_fetch_content(random_words, COUNTER_DOUBLE_F):
     base_url = "https://paste.c-net.org/"
     user_agents = [
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36'
@@ -97,6 +100,7 @@ def check_and_fetch_content(random_words):
     urls = [f"{base_url}{random_words[0]}{random_words[1]}", f"{base_url}{random_words[1]}{random_words[0]}"]
     flag=0
     flag1=0
+    double_fail=0
     for url in urls:
      flag= flag+1
      headers = {'User-Agent': random.choice(user_agents)}
@@ -119,7 +123,8 @@ def check_and_fetch_content(random_words):
       #print(response_string)
      except:
       response_string = message_neg
-      os.system("service tor reload"); print("\n")
+      double_fail=double_fail+1
+      #os.system("service tor reload"); print("\n")
       print("entering in sleeping after failure")
       time.sleep(2)
       print("Awakening")
@@ -141,6 +146,9 @@ def check_and_fetch_content(random_words):
                else:
                 insert_scraped_content_and_words(random_words[1], random_words[0], content, url.split('//')[1].strip())
                return content
+    if double_fail > 1:
+               print("double FAIL")
+               COUNTER_DOUBLE_F = COUNTER_DOUBLE_F +1
     # Return None if neither URL points to a valid page
     return None
 
@@ -150,6 +158,7 @@ def get_or_insert_word_id(word,cursor):
  result = cursor.fetchall()
  return result[0]
   
+
 def insert_scraped_content_and_words(word1, word2, content, url):
    conn = sqlite3.connect("Paste_Scraper.db")
    cursor = conn.cursor()
@@ -159,8 +168,10 @@ def insert_scraped_content_and_words(word1, word2, content, url):
    if flag[0] ==0:
     try:
         # Get or insert words and retrieve their IDs
+        
         word1_Array = get_or_insert_word_id(word1,cursor)
         word2_Array = get_or_insert_word_id(word2,cursor)
+
         # Insert into ScrapedContent table
         query="INSERT INTO ScrapedContent (Word1ID, Word2ID, ScrapedText, ScrapedDateTime, URL) VALUES ("+str(word1_Array[0])+", "+str(word2_Array[0])+", '"+content+"', datetime('now'), '"+url+"')" 
         print("printo: "+query)
@@ -182,15 +193,15 @@ def MultiProc():
  random_words = get_two_random_words()
  print(random_words)
  # Example usage with two sample words
- content = check_and_fetch_content(random_words)
+ content = check_and_fetch_content(random_words,COUNTER_DOUBLE_F)
  if content:
   print("Content fetched successfully.")
   print(content)
  else:
   print("No valid page found for the given word combinations.")
  str(os.system("date +%k:%M.%S")).strip()
- 
- #MAIN STARTS HERE
+
+
 if len(sys.argv) > 1:
  Paste_dictionary(sys.argv[1])
 else:
@@ -198,12 +209,26 @@ else:
 # Example usage random words
 while True:
     results = []
+    COUNTER_DOUBLE_F = 0
     running_processes = []
     index = 0
+    procs = []
+    start = time.time()
     for index in range(1, MAX_SUB_PROCESSES+1):
       p = multiprocessing.Process(target=MultiProc)
+      procs.append(p)
       p.start()
-      running_processes.append(p)
-    for p in running_processes:
-      p.join()
+    while time.time() - start <= TIMEOUT:
+      time.sleep(0.5) #just to don't stress the CPU too much
+      if not any(p.is_alive() for p in procs):
+       # All the processes are done, break now.
+       break
+     # else:
+       # We only enter this if we didn't 'break' above.
+    print("timed out, killing all processes")
+      # print(time.time() -  start)
+    for p in procs:
+     p.terminate()
+     p.join()
     print(str(MAX_SUB_PROCESSES)+" Processes closed")
+    print(str(COUNTER_DOUBLE_F)+" Double fails!")
